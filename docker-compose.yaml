@@ -14,12 +14,7 @@ services:
     container_name: menu_db
     image: postgres:14.5-alpine
     restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: template
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
- 
-volumes:
-  postgres_data:
