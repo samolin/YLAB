@@ -13,4 +13,4 @@ class Submenu(Base):
     menu_id = Column(UUID, ForeignKey('menu.id', ondelete='CASCADE'), nullable=False)
     menu = relationship('Menu', back_populates="submenus")
     dishes = relationship("Dish", back_populates="submenu", cascade="delete")
-    # dishes_count = 
+    #dishes_count = Column(Integer, default=0, nullable=False)
