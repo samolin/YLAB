@@ -11,7 +11,4 @@ class Menu(Base):
     title = Column(String(50), nullable=False, unique=True)
     description = Column(String(256), nullable=True)
     submenus = relationship("Submenu", back_populates="menu", cascade="delete")
-    #submenus_count = Column(Integer, default=0, nullable=False)
-    #dishes_count = Column(Integer, default=0, nullable=False)
-
     

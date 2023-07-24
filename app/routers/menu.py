@@ -24,6 +24,8 @@ def create_menu(menu: MenuCreate, db: Session = Depends(get_db)):
 @router.get('')
 def get_menus(db: Session = Depends(get_db)):
     menus = list_menu(db)
+    for menu in menus:
+        menu.submenus_count, menu.dishes_count = menu_counter(id=menu.id, db=db)
     return menus
 
 
@@ -78,6 +80,8 @@ def create_submenus(submenu: SubmenuCreate, id: UUID, db: Session = Depends(get_
 @router.get('/{id}/submenus')
 def get_submenus(id: UUID, db: Session = Depends(get_db)):
     submenus = list_submenus(id=id, db=db)
+    for submenu in submenus:
+        submenu.dishes_count = submenu_counter(sub_id=submenu.id, db=db)
     return submenus
 
 
