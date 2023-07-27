@@ -7,14 +7,33 @@ services:
       - 8000:8000
     env_file:
       - ./.env
+    networks:
+      - ylab_network
     depends_on:
-      - db
+      postgres_ylab:
+        condition: service_healthy
 
-  db:
-    container_name: menu_db
-    image: postgres:14.5-alpine
+  postgres_ylab:
+    container_name: postgres_ylab
+    image: postgres:15.1-alpine
     restart: always
     environment:
-      POSTGRES_DB: template
+      POSTGRES_DB: ylab
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    networks:
+      - ylab_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "ylab"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 80s
+
+networks:
+  ylab_network:
+    name: ylab_network
