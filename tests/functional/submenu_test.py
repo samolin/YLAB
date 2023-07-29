@@ -30,7 +30,7 @@ def test_submenu(ids):
             "description": "My submenu description 1",
             "menu_id": f"{ids['menu_id']}",
             "dishes_count": 0
-        }]
+    }]
     
 
 def test_peculiar_submenu(ids):
@@ -42,7 +42,7 @@ def test_peculiar_submenu(ids):
             "description": "My submenu description 1",
             "menu_id": f"{ids['menu_id']}",
             "dishes_count": 0
-        }
+    }
 
 
 def test_update_submenu(ids):
@@ -66,7 +66,7 @@ def test_peculiar_change_submenu(ids):
             "description": "My updated submenu description 1",
             "menu_id": f"{ids['menu_id']}",
             "dishes_count": 0
-        }
+    }
     
 
 def test_delete_menu(ids):

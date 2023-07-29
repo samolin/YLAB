@@ -163,12 +163,3 @@ def del_dish(id: UUID, dish_id: UUID, db: Session = Depends(get_db)):
             detail=f"Menu with id {dish_id} not found",
         )
     return {"msg": "Successfully deleted data"}
-
-
-
-
-'''       TEST       '''
-@router.get('/dish/{dish_id}', response_model=DishShow)
-def all_dish(dish_id: UUID, db: Session = Depends(get_db)):
-    dishes = get_dish_by_id(dish_id=dish_id, db=db)
-    return dishes

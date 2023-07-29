@@ -1,6 +1,7 @@
 import pytest
 
 from app.db.models.menu import Menu
+from app.db.models.submenu import Submenu
 from app.db.database import get_db
 
 
@@ -16,6 +17,29 @@ def create_menu_fixture():
     db.commit()
     menu = db.query(Menu).filter(Menu.id==menu_obj.id).first()
     yield menu.id
+    menu = db.query(Menu).filter(Menu.id==menu_obj.id)
+    menu.delete()
+    db.commit()
+
+
+@pytest.fixture(scope='module')
+def create_submenu_fixture():
+    menu_obj = Menu(
+        title = 'My menu for submenu 1',
+        description = 'My description for submenu 1'
+    )
+    db.add(menu_obj)
+    db.commit()
+    menu = db.query(Menu).filter(Menu.id==menu_obj.id).first()
+    submenu_obj = Submenu(
+        title = 'My menu for submenu 1',
+        description = 'My description for submenu 1',
+        menu_id = str(menu.id)
+    )
+    db.add(submenu_obj)
+    db.commit()
+    submenu = db.query(Submenu).filter(Submenu.id==submenu_obj.id).first()
+    yield menu.id, submenu.id
     menu = db.query(Menu).filter(Menu.id==menu_obj.id)
     menu.delete()
     db.commit()
