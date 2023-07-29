@@ -55,7 +55,7 @@ def test_update_menu(ids):
     assert response.json()['description'] == payload['description']
 
 
-def test_peculiar_changed_menu(ids):
+def test_peculiar_change_menu(ids):
     response = client.get(f"/api/v1/menus/{ids['menu_id']}")
     assert response.status_code == 200
     assert response.json() == {

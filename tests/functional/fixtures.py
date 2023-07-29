@@ -6,15 +6,16 @@ from app.db.database import get_db
 
 db = next(get_db())
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def create_menu_fixture():
     menu_obj = Menu(
-        title = 'title1',
-        description = 'description1',
+        title = 'My menu for submenu 1',
+        description = 'My description for submenu 1'
     )
     db.add(menu_obj)
     db.commit()
-    yield
+    menu = db.query(Menu).filter(Menu.id==menu_obj.id).first()
+    yield menu.id
     menu = db.query(Menu).filter(Menu.id==menu_obj.id)
     menu.delete()
     db.commit()

@@ -25,7 +25,7 @@ services:
       postgres_ylab:
         condition: service_healthy
     profiles: ["tests"]
-    command: "poetry run pytest ./tests"
+    command: "poetry run pytest ./tests -vv"
 
   postgres_ylab:
     container_name: postgres_ylab
