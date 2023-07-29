@@ -14,7 +14,7 @@ services:
         condition: service_healthy
     profiles: ["app"]
 
-  app_test:
+  app-test:
     build: .
     container_name: menu_test
     env_file:
