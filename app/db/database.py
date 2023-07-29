@@ -6,7 +6,6 @@ from sqlalchemy_utils import create_database, database_exists
 
 from app.core.config import settings
 
-import pytest
 
 SQLALCHEMY_DATABASE_URL = str(settings.DATABASE_URL)
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
@@ -21,5 +20,3 @@ def get_db() -> Generator:
         yield db
     finally:
         db.close()
-
-assert ValueError('efkhfefekfhkf')

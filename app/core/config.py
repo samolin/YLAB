@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from pydantic import Field, AnyUrl, PostgresDsn, root_validator
+from pydantic import Field, AnyUrl, PostgresDsn, model_validator
 from pydantic_settings import BaseSettings
 from typing import Dict, Any
 
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = Field(env="POSTGRES_DB")
     DATABASE_URL: PostgresDsn
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
     def assemble_dsn(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         values["DATABASE_URL"] = PostgresDsn.build(
             scheme="postgresql+psycopg2",

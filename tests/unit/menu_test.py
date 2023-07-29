@@ -7,9 +7,10 @@ from tests.unit.conftest import client
 import json
 
 
-def test_initial_menu():
-    response = client.get("api/v1//menus")
+def test_initial_menu(create_menu_fixture):
+    response = client.get("api/v1/menus")
     assert response.status_code == 200
+    print(response.json())
     assert response.json() == []
 
 
@@ -22,4 +23,6 @@ def test_menu_create():
     assert response.status_code == 201
     assert response.json()['title'] == payload['title']
     assert response.json()['description'] == payload['description']
+
+
 
