@@ -21,3 +21,5 @@ def get_db() -> Generator:
         yield db
     finally:
         db.close()
+
+assert ValueError('efkhfefekfhkf')
