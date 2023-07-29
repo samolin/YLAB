@@ -14,18 +14,14 @@ def include_routers(app):
 def create_tables():
     Base.metadata.create_all(bind=engine)
 
-
 def start_application():
     app = FastAPI(
         title=settings.PROJECT_NAME,
         description=settings.PROJECT_VERSION,
     )
-    create_tables()
+    create_tables() 
     include_routers(app)
     return app
 
 
 app = start_application()
-
-
-

@@ -12,6 +12,20 @@ services:
     depends_on:
       postgres_ylab:
         condition: service_healthy
+    profiles: ["app"]
+
+  app_test:
+    build: .
+    container_name: menu_test
+    env_file:
+      - ./test.env
+    networks:
+      - ylab_network
+    depends_on:
+      postgres_ylab:
+        condition: service_healthy
+    profiles: ["tests"]
+    command: "poetry run pytest ./tests"
 
   postgres_ylab:
     container_name: postgres_ylab
@@ -33,6 +47,7 @@ services:
       timeout: 30s
       retries: 5
       start_period: 80s
+    profiles: ["tests", "app"]
 
 networks:
   ylab_network:

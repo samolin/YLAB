@@ -1,7 +1,11 @@
 .PHONY: up
 up:
-	@docker-compose up --build -d
+	@docker compose --profile app up --build -d
 
+
+.PHONY: tests
+tests:
+	@docker compose --profile tests up --build -d
 
 .PHONY: down
 down:
