@@ -1,14 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.db.CRUD.dish import (
+    create_new_dish,
+    delete_dish,
+    get_dish_by_id,
+    list_dishes,
+    update_dish_by_id,
+)
+from app.db.CRUD.menu import (
+    create_new_menu,
+    delete_menu,
+    list_menu,
+    retrieve_menu,
+    update_menu_by_id,
+)
+from app.db.CRUD.submenu import (
+    create_new_submenu,
+    delete_submenu,
+    get_submenu_by_id,
+    list_submenus,
+    update_submenu_by_id,
+)
 from app.db.database import get_db
-from app.db.CRUD.menu import create_new_menu, list_menu, update_menu_by_id, delete_menu, retrieve_menu
-from app.db.CRUD.submenu import create_new_submenu, list_submenus, get_submenu_by_id, update_submenu_by_id, delete_submenu
-from app.db.CRUD.dish import create_new_dish, list_dishes, get_dish_by_id, update_dish_by_id, delete_dish
-from app.schemas.menu import MenuCreate
-from app.schemas.submenu import SubmenuCreate
-from app.schemas.dish import DishCreate, DishShow
+from app.schemas.dish_schemas import DishCreate, DishShow
+from app.schemas.menu_schemas import MenuCreate
+from app.schemas.submenu_schemas import SubmenuCreate
 from app.utils.counter import menu_counter, submenu_counter
 
 router = APIRouter()
@@ -16,8 +35,8 @@ router = APIRouter()
 
 @router.post('', status_code=201)
 def create_menu(menu: MenuCreate, db: Session = Depends(get_db)):
-   menu = create_new_menu(menu=menu, db=db)
-   return menu
+    menu = create_new_menu(menu=menu, db=db)
+    return menu
 
 
 @router.get('')
@@ -28,7 +47,7 @@ def get_menus(db: Session = Depends(get_db)):
     return menus
 
 
-@router.get("/{id}")
+@router.get('/{id}')
 def get_menu(id: UUID, db: Session = Depends(get_db)):
     menu = retrieve_menu(id=id, db=db)
     if menu:
@@ -36,12 +55,12 @@ def get_menu(id: UUID, db: Session = Depends(get_db)):
     if not menu:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"menu not found",
+            detail='menu not found',
         )
     return menu
 
 
-@router.patch("/{id}")
+@router.patch('/{id}')
 def update_menu(
     id: UUID,
     menu: MenuCreate,
@@ -51,7 +70,7 @@ def update_menu(
     if not message:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"menu not found",
+            detail='menu not found',
         )
     return message
 
@@ -62,12 +81,11 @@ def del_menu(id: UUID, db: Session = Depends(get_db)):
     if not menu:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"menu not found",
+            detail='menu not found',
         )
     return {
-        "message": "The menu has been deleted"
-        }
-
+        'message': 'The menu has been deleted'
+    }
 
 
 @router.post('/{id}/submenus', status_code=201)
@@ -92,7 +110,7 @@ def get_submenu(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
     if not submenu:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"submenu not found",
+            detail='submenu not found',
         )
     return submenu
 
@@ -103,7 +121,7 @@ def update_submenu(id: UUID, sub_id: UUID, submenu: SubmenuCreate, db: Session =
     if not message:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"submenu not found",
+            detail='submenu not found',
         )
     return message
 
@@ -114,9 +132,9 @@ def del_submenu(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
     if not submenu:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"submenu not found",
+            detail='submenu not found',
         )
-    return {"msg": "Successfully deleted data"}
+    return {'msg': 'Successfully deleted data'}
 
 
 @router.post('/{id}/submenus/{sub_id}/dishes', status_code=201, response_model=DishShow)
@@ -137,7 +155,7 @@ def get_dish(dish_id: UUID, db: Session = Depends(get_db)):
     if not dish:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"dish not found",
+            detail='dish not found',
         )
     return dish
 
@@ -148,7 +166,7 @@ def update_dish(dish: DishCreate, dish_id: UUID, db: Session = Depends(get_db)):
     if not message:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Menu with id: {dish_id} was not found",
+            detail=f'Menu with id: {dish_id} was not found',
         )
     return message
 
@@ -159,6 +177,6 @@ def del_dish(id: UUID, dish_id: UUID, db: Session = Depends(get_db)):
     if not dish:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Menu with id {dish_id} not found",
+            detail=f'Menu with id {dish_id} not found',
         )
-    return {"msg": "Successfully deleted data"}
+    return {'msg': 'Successfully deleted data'}

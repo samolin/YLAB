@@ -9,11 +9,11 @@ tests:
 
 .PHONY: down
 down:
-	@docker compose --profile app down 
+	@docker compose --profile app down
 
 .PHONY: tests-down
 tests-down:
-	@docker compose --profile tests down 
+	@docker compose --profile tests down
 
 
 .PHONY: start

@@ -1,16 +1,18 @@
-from sqlalchemy.orm import Session
 from uuid import UUID
 
-from app.schemas.dish import DishCreate
-from ..models.dish import Dish
+from sqlalchemy.orm import Session
+
+from app.schemas.dish_schemas import DishCreate
+
+from ..models.dish_model import Dish
 
 
 def create_new_dish(dish: DishCreate, db: Session, sub_id: UUID):
     dish_obj = Dish(
-        title = dish.title,
-        description = dish.description,
-        price = dish.price,
-        submenu_id = sub_id,
+        title=dish.title,
+        description=dish.description,
+        price=dish.price,
+        submenu_id=sub_id,
     )
     db.add(dish_obj)
     db.commit()

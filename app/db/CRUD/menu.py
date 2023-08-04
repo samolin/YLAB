@@ -1,13 +1,14 @@
 from sqlalchemy.orm import Session
 
-from app.schemas.menu import MenuCreate
-from ..models.menu import Menu
+from app.schemas.menu_schemas import MenuCreate
+
+from ..models.menu_model import Menu
 
 
 def create_new_menu(menu: MenuCreate, db: Session):
     menu_obj = Menu(
-        title = menu.title,
-        description = menu.description,
+        title=menu.title,
+        description=menu.description,
     )
     db.add(menu_obj)
     db.commit()
@@ -35,7 +36,7 @@ def update_menu_by_id(id: int, db: Session, menu: MenuCreate):
 
 
 def delete_menu(db: Session, id: int):
-    menu = db.query(Menu).filter(Menu.id==id)
+    menu = db.query(Menu).filter(Menu.id == id)
     if not menu.first():
         return 0
     menu.delete()

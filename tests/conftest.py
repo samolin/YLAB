@@ -1,11 +1,11 @@
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy_utils import drop_database
-import pytest
 
 from app.db.database import engine
 from app.main import app
 
-pytest_plugins = ("tests.functional.fixtures")
+pytest_plugins = ('tests.functional.fixtures')
 
 client = TestClient(app)
 
