@@ -12,6 +12,8 @@ services:
     depends_on:
       postgres_ylab:
         condition: service_healthy
+    volumes:
+      - ./app:/app/app
     profiles: ["app"]
 
   app-test:

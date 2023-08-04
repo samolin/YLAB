@@ -14,7 +14,6 @@ from app.utils.counter import menu_counter, submenu_counter
 router = APIRouter()
 
 
-
 @router.post('', status_code=201)
 def create_menu(menu: MenuCreate, db: Session = Depends(get_db)):
    menu = create_new_menu(menu=menu, db=db)

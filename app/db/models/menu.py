@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from uuid import uuid4
@@ -11,4 +11,3 @@ class Menu(Base):
     title = Column(String(50), nullable=False, unique=True)
     description = Column(String(256), nullable=True)
     submenus = relationship("Submenu", back_populates="menu", cascade="delete")
-    

@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 
 from app.db.models.submenu import Submenu
 from app.db.models.dish import Dish
-from app.db.models.menu import Menu
 
 
 def menu_counter(id, db: Session):
