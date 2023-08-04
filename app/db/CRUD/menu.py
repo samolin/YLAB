@@ -7,7 +7,7 @@ from app.schemas.menu_schemas import MenuCreate
 from ..models.menu_model import Menu
 
 
-def create_new_menu(menu: MenuCreate, db: Session):
+def create_new_menu(menu: MenuCreate, db: Session) -> Menu:
     menu_obj = Menu(
         title=menu.title,
         description=menu.description,

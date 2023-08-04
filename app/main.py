@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 
 from app.core.config import settings
-from app.db.base import Base
-from app.db.database import engine
+from app.db.database import Base, engine
 from app.routers.base import api_router
 
 app = FastAPI()
