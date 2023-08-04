@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.schemas.menu_schemas import MenuCreate
@@ -21,12 +23,12 @@ def list_menu(db: Session):
     return menus
 
 
-def retrieve_menu(id: int, db: Session):
+def retrieve_menu(id: UUID, db: Session):
     item = db.query(Menu).filter(Menu.id == id).first()
     return item
 
 
-def update_menu_by_id(id: int, db: Session, menu: MenuCreate):
+def update_menu_by_id(id: UUID, db: Session, menu: MenuCreate):
     existing_menu = db.query(Menu).filter(Menu.id == id)
     if not existing_menu.first():
         return 0
@@ -35,7 +37,7 @@ def update_menu_by_id(id: int, db: Session, menu: MenuCreate):
     return existing_menu.first()
 
 
-def delete_menu(db: Session, id: int):
+def delete_menu(db: Session, id: UUID):
     menu = db.query(Menu).filter(Menu.id == id)
     if not menu.first():
         return 0
