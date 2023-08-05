@@ -42,9 +42,8 @@ def create_menu(menu: MenuCreate, db: Session = Depends(get_db)):
 
 
 @router.get('')
-@cache()
+@cache(expire=60)
 def get_menus(db: Session = Depends(get_db)):
-    time.sleep(2)
     menus = list_menu(db)
     for menu in menus:
         menu.submenus_count, menu.dishes_count = menu_counter(id=menu.id, db=db)
@@ -52,6 +51,7 @@ def get_menus(db: Session = Depends(get_db)):
 
 
 @router.get('/{id}')
+@cache(expire=60)
 def get_menu(id: UUID, db: Session = Depends(get_db)):
     menu = retrieve_menu(id=id, db=db)
     if menu:
@@ -99,6 +99,7 @@ def create_submenus(submenu: SubmenuCreate, id: UUID, db: Session = Depends(get_
 
 
 @router.get('/{id}/submenus')
+@cache(expire=60)
 def get_submenus(id: UUID, db: Session = Depends(get_db)):
     submenus = list_submenus(id=id, db=db)
     for submenu in submenus:
@@ -107,6 +108,7 @@ def get_submenus(id: UUID, db: Session = Depends(get_db)):
 
 
 @router.get('/{id}/submenus/{sub_id}')
+@cache(expire=60)
 def get_submenu(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
     submenu = get_submenu_by_id(id=id, sub_id=sub_id, db=db)
     if submenu:
@@ -148,12 +150,14 @@ def create_dish(dish: DishCreate, sub_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.get('/{id}/submenus/{sub_id}/dishes')
+@cache(expire=60)
 def get_dishes(sub_id: UUID, db: Session = Depends(get_db)):
     dishes = list_dishes(sub_id=sub_id, db=db)
     return dishes
 
 
 @router.get('/{id}/submenus/{sub_id}/dishes/{dish_id}', response_model=DishShow | None)
+@cache(expire=60)
 def get_dish(dish_id: UUID, db: Session = Depends(get_db)):
     dish = get_dish_by_id(dish_id=dish_id, db=db)
     if not dish:
