@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.db.CRUD.menu import (
     create_new_menu,
     delete_menu,
-    list_menu,
+    list_menus,
     retrieve_menu,
     update_menu_by_id,
 )
@@ -27,7 +27,7 @@ def create_menu(menu: MenuCreate, db: Session = Depends(get_db)):
 @router.get('')
 @cache(expire=60)
 def get_menus(db: Session = Depends(get_db)):
-    menus = list_menu(db)
+    menus = list_menus(db)
     for menu in menus:
         menu.submenus_count, menu.dishes_count = menu_counter(id=menu.id, db=db)
     return menus

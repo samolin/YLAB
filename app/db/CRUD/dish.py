@@ -7,7 +7,7 @@ from app.schemas.dish_schemas import DishCreate
 from ..models.dish_model import Dish
 
 
-def create_new_dish(dish: DishCreate, db: Session, sub_id: UUID):
+def create_new_dish(dish: DishCreate, db: Session, sub_id: UUID) -> Dish:
     dish_obj = Dish(
         title=dish.title,
         description=dish.description,
@@ -20,25 +20,27 @@ def create_new_dish(dish: DishCreate, db: Session, sub_id: UUID):
     return dish_obj
 
 
-def list_dishes(db: Session, sub_id: UUID):
+def list_dishes(db: Session, sub_id: UUID) -> list[Dish]:
     dishes = db.query(Dish).filter(Dish.submenu_id == sub_id).all()
     return dishes
 
 
-def get_dish_by_id(db: Session, dish_id: UUID):
+def get_dish_by_id(db: Session, dish_id: UUID) -> Dish:
     dish = db.query(Dish).filter(Dish.id == dish_id).first()
     return dish
 
 
-def update_dish_by_id(dish: DishCreate, db: Session, dish_id: UUID):
+def update_dish_by_id(dish: DishCreate, db: Session, dish_id: UUID) -> Dish:
     existing_dish = db.query(Dish).filter(Dish.id == dish_id)
     existing_dish.update(dish.__dict__)
     db.commit()
     return existing_dish.first()
 
 
-def delete_dish(db: Session, dish_id: UUID):
+def delete_dish(db: Session, dish_id: UUID) -> int:
     dish = db.query(Dish).filter(Dish.id == dish_id)
+    if not dish.first():
+        return 0
     dish.delete()
     db.commit()
-    return dish
+    return 1

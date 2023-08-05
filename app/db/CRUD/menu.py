@@ -18,26 +18,24 @@ def create_new_menu(menu: MenuCreate, db: Session) -> Menu:
     return menu_obj
 
 
-def list_menu(db: Session):
+def list_menus(db: Session) -> list[Menu]:
     menus = db.query(Menu).all()
     return menus
 
 
-def retrieve_menu(id: UUID, db: Session):
+def retrieve_menu(id: UUID, db: Session) -> Menu:
     item = db.query(Menu).filter(Menu.id == id).first()
     return item
 
 
-def update_menu_by_id(id: UUID, db: Session, menu: MenuCreate):
+def update_menu_by_id(id: UUID, db: Session, menu: MenuCreate) -> Menu:
     existing_menu = db.query(Menu).filter(Menu.id == id)
-    if not existing_menu.first():
-        return 0
     existing_menu.update(menu.__dict__)
     db.commit()
     return existing_menu.first()
 
 
-def delete_menu(db: Session, id: UUID):
+def delete_menu(db: Session, id: UUID) -> int:
     menu = db.query(Menu).filter(Menu.id == id)
     if not menu.first():
         return 0
