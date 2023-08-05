@@ -1,6 +1,8 @@
+import time
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi_cache.decorator import cache
 from sqlalchemy.orm import Session
 
 from app.db.CRUD.dish import (
@@ -40,7 +42,9 @@ def create_menu(menu: MenuCreate, db: Session = Depends(get_db)):
 
 
 @router.get('')
+@cache()
 def get_menus(db: Session = Depends(get_db)):
+    time.sleep(2)
     menus = list_menu(db)
     for menu in menus:
         menu.submenus_count, menu.dishes_count = menu_counter(id=menu.id, db=db)

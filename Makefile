@@ -11,6 +11,7 @@ tests:
 down:
 	@docker compose --profile app down
 
+
 .PHONY: tests-down
 tests-down:
 	@docker compose --profile tests down
