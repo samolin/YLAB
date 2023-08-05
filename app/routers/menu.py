@@ -18,18 +18,10 @@ from app.db.CRUD.menu import (
     retrieve_menu,
     update_menu_by_id,
 )
-from app.db.CRUD.submenu import (
-    create_new_submenu,
-    delete_submenu,
-    get_submenu_by_id,
-    list_submenus,
-    update_submenu_by_id,
-)
 from app.db.database import get_db
 from app.schemas.dish_schemas import DishCreate, DishShow
 from app.schemas.menu_schemas import MenuCreate
-from app.schemas.submenu_schemas import SubmenuCreate
-from app.utils.counter import menu_counter, submenu_counter
+from app.utils.counter import menu_counter
 
 router = APIRouter()
 
@@ -89,57 +81,6 @@ def del_menu(id: UUID, db: Session = Depends(get_db)):
     return {
         'message': 'The menu has been deleted'
     }
-
-
-@router.post('/{id}/submenus', status_code=201)
-def create_submenus(submenu: SubmenuCreate, id: UUID, db: Session = Depends(get_db)):
-    menu = create_new_submenu(id=id, db=db, submenu=submenu)
-    return menu
-
-
-@router.get('/{id}/submenus')
-@cache(expire=60)
-def get_submenus(id: UUID, db: Session = Depends(get_db)):
-    submenus = list_submenus(id=id, db=db)
-    for submenu in submenus:
-        submenu.dishes_count = submenu_counter(sub_id=submenu.id, db=db)
-    return submenus
-
-
-@router.get('/{id}/submenus/{sub_id}')
-@cache(expire=60)
-def get_submenu(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
-    submenu = get_submenu_by_id(id=id, sub_id=sub_id, db=db)
-    if submenu:
-        submenu.dishes_count = submenu_counter(sub_id=sub_id, db=db)
-    if not submenu:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='submenu not found',
-        )
-    return submenu
-
-
-@router.patch('/{id}/submenus/{sub_id}')
-def update_submenu(id: UUID, sub_id: UUID, submenu: SubmenuCreate, db: Session = Depends(get_db)):
-    message = update_submenu_by_id(id=id, sub_id=sub_id, submenu=submenu, db=db)
-    if not message:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='submenu not found',
-        )
-    return message
-
-
-@router.delete('/{id}/submenus/{sub_id}')
-def del_submenu(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
-    submenu = delete_submenu(db=db, id=id, sub_id=sub_id)
-    if not submenu:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='submenu not found',
-        )
-    return {'msg': 'Successfully deleted data'}
 
 
 @router.post('/{id}/submenus/{sub_id}/dishes', status_code=201, response_model=DishShow)
