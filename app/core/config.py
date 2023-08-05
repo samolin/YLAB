@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from pydantic import AnyUrl, Field, PostgresDsn, RedisDsn, model_validator
+from pydantic import Field, PostgresDsn, RedisDsn, model_validator
 from pydantic_settings import BaseSettings
 
 env_path = Path('.') / '.env'
@@ -16,7 +16,7 @@ class App(BaseSettings):
 
 class Postgres(BaseSettings):
 
-    DOMAIN: AnyUrl = 'https://127.0.0.1:8000/'
+    DOMAIN: str = 'https://127.0.0.1:8000/'
     POSTGRES_PASSWORD: str = Field(env='POSTGRES_PASSWORD')
     POSTGRES_USER: str = Field(env='POSTGRES_USER')
     POSTGRES_SERVER: str = Field(env='POSTGRES_SERVER')
