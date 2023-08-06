@@ -12,27 +12,27 @@ from app.db.CRUD.dish import (
     update_dish_by_id,
 )
 from app.db.database import get_db
-from app.schemas.dish_schemas import DishCreate, DishShow
+from app.schemas.dish_schemas import DishCreate, DishSchema
 from app.utils.cache_utils import cache_deleter, id_key_builder
 
 router = APIRouter()
 
 
-@router.post('/dishes', status_code=201, response_model=DishShow)
+@router.post('/dishes', status_code=201, response_model=DishSchema)
 def create_dish(dish: DishCreate, id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
     dish = create_new_dish(sub_id=sub_id, db=db, dish=dish)
     cache_deleter()
     return dish
 
 
-@router.get('/dishes')
+@router.get('/dishes', status_code=200,)
 @cache(key_builder=id_key_builder, namespace='dish')
 def get_dishes(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
     dishes = list_dishes(sub_id=sub_id, db=db)
     return dishes
 
 
-@router.get('/dishes/{dish_id}', response_model=DishShow)
+@router.get('/dishes/{dish_id}', response_model=DishSchema)
 @cache(key_builder=id_key_builder, namespace='dish')
 def get_dish(id: UUID, sub_id: UUID, dish_id: UUID, db: Session = Depends(get_db)):
     dish = get_dish_by_id(dish_id=dish_id, db=db)
@@ -44,7 +44,7 @@ def get_dish(id: UUID, sub_id: UUID, dish_id: UUID, db: Session = Depends(get_db
     return dish
 
 
-@router.patch('/dishes/{dish_id}', response_model=DishShow)
+@router.patch('/dishes/{dish_id}', response_model=DishSchema)
 def update_dish(dish: DishCreate, dish_id: UUID, db: Session = Depends(get_db)):
     message = update_dish_by_id(dish_id=dish_id, db=db, dish=dish)
     cache_deleter()
