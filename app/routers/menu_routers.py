@@ -12,21 +12,21 @@ from app.db.CRUD.menu import (
     update_menu_by_id,
 )
 from app.db.database import get_db
-from app.schemas.menu_schemas import MenuCreate
+from app.schemas.menu_schemas import MenuCreate, MenuSchema
 from app.utils.cache_utils import cache_deleter, id_key_builder
 from app.utils.counter import menu_counter
 
 router = APIRouter()
 
 
-@router.post('', status_code=201)
+@router.post('', status_code=201, response_model=MenuSchema)
 def create_menu(menu: MenuCreate, db: Session = Depends(get_db)):
     menu = create_new_menu(menu=menu, db=db)
     cache_deleter()
     return menu
 
 
-@router.get('')
+@router.get('', status_code=200, response_model=list[MenuSchema])
 @cache(key_builder=id_key_builder, namespace='menu')
 def get_menus(db: Session = Depends(get_db)):
     menus = list_menus(db)
@@ -35,7 +35,7 @@ def get_menus(db: Session = Depends(get_db)):
     return menus
 
 
-@router.get('/{id}')
+@router.get('/{id}', status_code=200, response_model=MenuSchema)
 @cache(key_builder=id_key_builder, namespace='menu')
 def get_menu(id: UUID, db: Session = Depends(get_db)):
     menu = retrieve_menu(id=id, db=db)
@@ -49,7 +49,7 @@ def get_menu(id: UUID, db: Session = Depends(get_db)):
     return menu
 
 
-@router.patch('/{id}')
+@router.patch('/{id}', status_code=200, response_model=MenuSchema)
 def update_menu(
     id: UUID,
     menu: MenuCreate,
@@ -65,7 +65,7 @@ def update_menu(
     return message
 
 
-@router.delete('/{id}')
+@router.delete('/{id}', status_code=200)
 def del_menu(id: UUID, db: Session = Depends(get_db)):
     menu = delete_menu(db=db, id=id)
     cache_deleter()
