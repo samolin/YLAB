@@ -8,9 +8,6 @@ class MenuSchema(BaseModel):
     title: str
     description: str
 
-    class Config:
-        from_attributes = True
-
 
 class MenuCreate(BaseModel):
     title: str
