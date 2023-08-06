@@ -29,7 +29,7 @@ def test_dish(ids):
         'title': 'My dish 1',
         'description': 'Description for dish 1',
         'submenu_id': f"{ids['submenu_id']}",
-        'price': 20.0,
+        'price': '20.00',
     }]
 
 
@@ -40,7 +40,8 @@ def test_peculiar_dish(ids):
         'id': f"{ids['dish_id']}",
         'title': 'My dish 1',
         'description': 'Description for dish 1',
-        'price': '20.00'
+        'price': '20.00',
+        'submenu_id': f"{ids['submenu_id']}"
     }
 
 
@@ -66,7 +67,8 @@ def test_peculiar_change_dish(ids):
         'id': f"{ids['dish_id']}",
         'title': 'My new dish 1',
         'description': 'Description for fish dish 1',
-        'price': '823.00'
+        'price': '823.00',
+        'submenu_id': f"{ids['submenu_id']}"
     }
 
 

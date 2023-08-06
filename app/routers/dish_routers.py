@@ -25,14 +25,14 @@ def create_dish(dish: DishCreate, id: UUID, sub_id: UUID, db: Session = Depends(
     return dish
 
 
-@router.get('/dishes', status_code=200,)
+@router.get('/dishes', status_code=200, response_model=list[DishSchema])
 @cache(key_builder=id_key_builder, namespace='dish')
 def get_dishes(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
     dishes = list_dishes(sub_id=sub_id, db=db)
     return dishes
 
 
-@router.get('/dishes/{dish_id}', response_model=DishSchema)
+@router.get('/dishes/{dish_id}', status_code=200, response_model=DishSchema)
 @cache(key_builder=id_key_builder, namespace='dish')
 def get_dish(id: UUID, sub_id: UUID, dish_id: UUID, db: Session = Depends(get_db)):
     dish = get_dish_by_id(dish_id=dish_id, db=db)
@@ -44,7 +44,7 @@ def get_dish(id: UUID, sub_id: UUID, dish_id: UUID, db: Session = Depends(get_db
     return dish
 
 
-@router.patch('/dishes/{dish_id}', response_model=DishSchema)
+@router.patch('/dishes/{dish_id}', status_code=200, response_model=DishSchema)
 def update_dish(dish: DishCreate, dish_id: UUID, db: Session = Depends(get_db)):
     message = update_dish_by_id(dish_id=dish_id, db=db, dish=dish)
     cache_deleter()
@@ -56,7 +56,7 @@ def update_dish(dish: DishCreate, dish_id: UUID, db: Session = Depends(get_db)):
     return message
 
 
-@router.delete('/dishes/{dish_id}')
+@router.delete('/dishes/{dish_id}', status_code=200)
 def del_dish(id: UUID, dish_id: UUID, db: Session = Depends(get_db)):
     dish = delete_dish(db=db, dish_id=dish_id)
     cache_deleter()

@@ -7,6 +7,7 @@ class SubmenuSchema(BaseModel):
     id: UUID
     title: str
     description: str
+    dishes_count: int | None = None
     menu_id: UUID
 
 

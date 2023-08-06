@@ -27,7 +27,7 @@ def create_menu(menu: MenuCreate, db: Session = Depends(get_db)):
 
 
 @router.get('')
-# @cache(key_builder=id_key_builder, namespace='menu')
+@cache(key_builder=id_key_builder, namespace='menu')
 def get_menus(db: Session = Depends(get_db)):
     menus = list_menus(db)
     for menu in menus:

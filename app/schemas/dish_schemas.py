@@ -8,6 +8,7 @@ class DishSchema(BaseModel):
     title: str
     description: str
     price: float
+    submenu_id: UUID
 
     @field_validator('price')
     @classmethod

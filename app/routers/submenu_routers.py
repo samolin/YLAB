@@ -12,21 +12,21 @@ from app.db.CRUD.submenu import (
     update_submenu_by_id,
 )
 from app.db.database import get_db
-from app.schemas.submenu_schemas import SubmenuCreate
+from app.schemas.submenu_schemas import SubmenuCreate, SubmenuSchema
 from app.utils.cache_utils import cache_deleter, id_key_builder
 from app.utils.counter import submenu_counter
 
 router = APIRouter()
 
 
-@router.post('/submenus', status_code=201)
+@router.post('/submenus', status_code=201, response_model=SubmenuSchema)
 def create_submenus(submenu: SubmenuCreate, id: UUID, db: Session = Depends(get_db)):
     menu = create_new_submenu(id=id, db=db, submenu=submenu)
     cache_deleter()
     return menu
 
 
-@router.get('/submenus')
+@router.get('/submenus', status_code=200, response_model=list[SubmenuSchema])
 @cache(key_builder=id_key_builder, namespace='submenu')
 def get_submenus(id: UUID, db: Session = Depends(get_db)):
     submenus = list_submenus(id=id, db=db)
@@ -35,7 +35,7 @@ def get_submenus(id: UUID, db: Session = Depends(get_db)):
     return submenus
 
 
-@router.get('/submenus/{sub_id}')
+@router.get('/submenus/{sub_id}', status_code=200, response_model=SubmenuSchema)
 @cache(key_builder=id_key_builder, namespace='submenu')
 def get_submenu(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
     submenu = get_submenu_by_id(id=id, sub_id=sub_id, db=db)
@@ -49,7 +49,7 @@ def get_submenu(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
     return submenu
 
 
-@router.patch('/submenus/{sub_id}')
+@router.patch('/submenus/{sub_id}', status_code=200, response_model=SubmenuSchema)
 def update_submenu(id: UUID, sub_id: UUID, submenu: SubmenuCreate, db: Session = Depends(get_db)):
     message = update_submenu_by_id(id=id, sub_id=sub_id, submenu=submenu, db=db)
     cache_deleter()
@@ -61,7 +61,7 @@ def update_submenu(id: UUID, sub_id: UUID, submenu: SubmenuCreate, db: Session =
     return message
 
 
-@router.delete('/submenus/{sub_id}')
+@router.delete('/submenus/{sub_id}', status_code=200)
 def del_submenu(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
     submenu = delete_submenu(db=db, id=id, sub_id=sub_id)
     cache_deleter()
