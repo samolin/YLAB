@@ -1,17 +1,9 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Request
 from fastapi_cache.decorator import cache
-from sqlalchemy.orm import Session
 
-from app.db.CRUD.dish import (
-    create_new_dish,
-    delete_dish,
-    get_dish_by_id,
-    list_dishes,
-    update_dish_by_id,
-)
-from app.db.database import get_db
+from app.repositories.dish_repository import DishRepository
 from app.schemas.dish_schemas import DishCreate, DishSchema
 from app.utils.cache_utils import cache_deleter, id_key_builder
 
@@ -19,50 +11,37 @@ router = APIRouter()
 
 
 @router.post('/dishes', status_code=201, response_model=DishSchema)
-def create_dish(dish: DishCreate, id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
-    dish = create_new_dish(sub_id=sub_id, db=db, dish=dish)
-    cache_deleter()
+async def create_dish(dish: DishCreate, id: UUID, sub_id: UUID, request: Request):
+    dish.__setattr__('submenu_id', sub_id)
+    dish = await DishRepository().add_new(dish.model_dump())
+    await cache_deleter(path=request.url.path)
     return dish
 
 
 @router.get('/dishes', status_code=200, response_model=list[DishSchema])
 @cache(key_builder=id_key_builder, namespace='dish')
-def get_dishes(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
-    dishes = list_dishes(sub_id=sub_id, db=db)
+async def get_dishes(id: UUID, sub_id: UUID):
+    dishes = await DishRepository().get_all(submenu_id=sub_id)
     return dishes
 
 
 @router.get('/dishes/{dish_id}', status_code=200, response_model=DishSchema)
 @cache(key_builder=id_key_builder, namespace='dish')
-def get_dish(id: UUID, sub_id: UUID, dish_id: UUID, db: Session = Depends(get_db)):
-    dish = get_dish_by_id(dish_id=dish_id, db=db)
-    if not dish:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='dish not found',
-        )
+async def get_dish(id: UUID, sub_id: UUID, dish_id: UUID):
+    dish = await DishRepository().get_one(dish_id=dish_id)
     return dish
 
 
 @router.patch('/dishes/{dish_id}', status_code=200, response_model=DishSchema)
-def update_dish(dish: DishCreate, dish_id: UUID, db: Session = Depends(get_db)):
-    message = update_dish_by_id(dish_id=dish_id, db=db, dish=dish)
-    cache_deleter()
-    if not message:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f'Menu with id: {dish_id} was not found',
-        )
-    return message
+async def update_dish(dish: DishCreate, id: UUID, sub_id: UUID, dish_id: UUID, request: Request):
+    dish.__setattr__('submenu_id', sub_id)
+    dish = await DishRepository().patch_one(dish.model_dump(), dish_id=dish_id)
+    await cache_deleter(path=request.url.path)
+    return dish
 
 
 @router.delete('/dishes/{dish_id}', status_code=200)
-def del_dish(id: UUID, dish_id: UUID, db: Session = Depends(get_db)):
-    dish = delete_dish(db=db, dish_id=dish_id)
-    cache_deleter()
-    if not dish:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f'Menu with id {dish_id} not found',
-        )
+async def del_dish(id: UUID, sub_id: UUID, dish_id: UUID, request: Request):
+    await DishRepository().del_one(dish_id=dish_id)
+    await cache_deleter(path=request.url.path)
     return {'msg': 'Successfully deleted data'}

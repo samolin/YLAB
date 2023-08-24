@@ -1,26 +1,16 @@
-from typing import Generator
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
-from sqlalchemy_utils import create_database, database_exists
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
 
-SQLALCHEMY_DATABASE_URL = str(settings.postgres.DATABASE_URL)
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-if not database_exists(engine.url):
-    create_database(engine.url)
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_async_engine(str(settings.postgres.DATABASE_URL))
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):
     pass
 
 
-def get_db() -> Generator:
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
+async def get_async_session():
+    async with async_session_maker() as session:
+        yield session

@@ -7,6 +7,8 @@ services:
       - 8000:8000
     env_file:
       - ./.env
+    environment:
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@${RABBITMQ_HOST}:${RABBITMQ_PORT}
     networks:
       - ylab_network
     depends_on:
@@ -36,9 +38,12 @@ services:
     image: postgres:15.1-alpine
     restart: always
     environment:
-      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_MULTIPLE_DATABASES: "${POSTGRES_DB}, ${POSTGRES_DB_TEST}"
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - ./multiple-databases.sh:/docker-entrypoint-initdb.d/multiple-databases.sh
+      - postgres_data:/var/lib/postgresql/data
     expose:
       - 5432
     ports:
@@ -65,7 +70,48 @@ services:
       - ylab_network
     env_file:
       - ./.env
+    profiles: ["tests", "app"]
+
+  worker:
+    build: .
+    container_name: worker_ylab
+    restart: always
+    env_file:
+      - ./.env
+    command: celery -A app.celery.tasks worker --loglevel=info
+    depends_on:
+      - app
+      - rabbitmq
+    networks:
+      - ylab_network
     profiles: ["app"]
+
+  rabbitmq:
+    container_name: 'rabbitmq'
+    image: rabbitmq:3-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - ylab_network
+    profiles: ["app"]
+
+  # dashboard:
+  #   build: .
+  #   command: celery -A app.celery.tasks flower --port=5555
+  #   ports:
+  #     - 5556:5555
+  #   environment:
+  #     - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672/
+  #   depends_on:
+  #     - app
+  #     - rabbitmq
+  #     - worker
+  #   networks:
+  #     - ylab_network
 
 networks:
   ylab_network:
@@ -73,3 +119,4 @@ networks:
 
 volumes:
   redis_data:
+  postgres_data:

@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from pydantic import Field, PostgresDsn, RedisDsn, model_validator
+from pydantic import AmqpDsn, Field, PostgresDsn, RedisDsn, model_validator
 from pydantic_settings import BaseSettings
 
 env_path = Path('.') / '.env'
@@ -15,7 +15,6 @@ class App(BaseSettings):
 
 
 class Postgres(BaseSettings):
-
     DOMAIN: str = 'https://127.0.0.1:8000/'
     POSTGRES_PASSWORD: str = Field(env='POSTGRES_PASSWORD')
     POSTGRES_USER: str = Field(env='POSTGRES_USER')
@@ -27,7 +26,7 @@ class Postgres(BaseSettings):
     @model_validator(mode='before')
     def assemble_dsn(cls, values: dict[str, Any]) -> dict[str, Any]:
         values['DATABASE_URL'] = PostgresDsn.build(
-            scheme='postgresql+psycopg2',
+            scheme='postgresql+asyncpg',
             username=values['POSTGRES_USER'],
             password=values['POSTGRES_PASSWORD'],
             host=values['POSTGRES_SERVER'],
@@ -54,10 +53,31 @@ class Redis(BaseSettings):
         return values
 
 
+class RabbitMQ(BaseSettings):
+    RABBITMQ_HOST: str = Field(env='RABBITMQ_HOST')
+    RABBITMQ_PORT: int = Field(env='RABBITMQ_PORT')
+    RABBITMQ_USER: str = Field(env='RABBITMQ_USER')
+    RABBITMQ_PASSWORD: str = Field(env='RABBITMQ_PASSWORD')
+    RABBIT_URL: AmqpDsn
+    # CELERY_BROKER_URL: AmqpDsn = f"{RABBITMQ_PROTOCOL}://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:{RABBITMQ_PORT}"
+
+    @model_validator(mode='before')
+    def assemble_dsn(cls, values: dict[str, Any]) -> dict[str, Any]:
+        values['RABBIT_URL'] = AmqpDsn.build(
+            scheme='amqp',
+            username=values['RABBITMQ_USER'],
+            password=values['RABBITMQ_PASSWORD'],
+            host=values['RABBITMQ_HOST'],
+            port=int(values['RABBITMQ_PORT']),
+        )
+        return values
+
+
 class Settings(BaseSettings):
     app: App = App()
     postgres: Postgres = Postgres()
     redis: Redis = Redis()
+    rabbit: RabbitMQ = RabbitMQ()
 
 
 settings = Settings()

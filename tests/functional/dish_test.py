@@ -1,41 +1,56 @@
-from tests.conftest import client
+from fastapi import status
+from httpx import AsyncClient
+
+from app.main import app
 
 
-def test_initial_dish(create_submenu_fixture, ids):
-    response = client.get('api/v1/menus')
+async def test_dish_not_found(client: AsyncClient, ids: dict, create_submenu_fixture):
     ids['menu_id'], ids['submenu_id'] = map(str, create_submenu_fixture)
-    assert response.status_code == 200
+    response = await client.get(
+        app.url_path_for('get_dishes', id=ids['menu_id'], sub_id=ids['submenu_id'])
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {'detail': 'dish not found'}
 
 
-def test_dish_create(ids):
+async def test_dish_create(client: AsyncClient, ids: dict):
     payload = {
         'title': 'My dish 1',
         'description': 'Description for dish 1',
-        'price': 20
+        'price': 20,
+        'submenu_id': f"{ids['submenu_id']}"
     }
-    response = client.post(f"api/v1/menus/{ids['menu_id']}/submenus/{ids['submenu_id']}/dishes", json=payload)
-    assert response.status_code == 201
+    response = await client.post(
+        app.url_path_for('create_dish', id=ids['menu_id'], sub_id=ids['submenu_id']),
+        json=payload
+    )
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json()['title'] == payload['title']
     assert response.json()['description'] == payload['description']
     assert response.json()['price'] == '{:.2f}'.format(payload['price'])
+    assert response.json()['submenu_id'] == ids['submenu_id']
     ids['dish_id'] = response.json()['id']
 
 
-def test_dish(ids):
-    response = client.get(f"api/v1/menus/{ids['menu_id']}/submenus/{ids['submenu_id']}/dishes")
-    assert response.status_code == 200
+async def test_get_all_dishes(client: AsyncClient, ids: dict):
+    response = await client.get(
+        app.url_path_for('get_dishes', id=ids['menu_id'], sub_id=ids['submenu_id'])
+    )
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == [{
         'id': f"{ids['dish_id']}",
         'title': 'My dish 1',
         'description': 'Description for dish 1',
-        'submenu_id': f"{ids['submenu_id']}",
         'price': '20.00',
+        'submenu_id': f"{ids['submenu_id']}",
     }]
 
 
-def test_peculiar_dish(ids):
-    response = client.get(f"api/v1/menus/{ids['menu_id']}/submenus/{ids['submenu_id']}/dishes/{ids['dish_id']}")
-    assert response.status_code == 200
+async def test_get_one_dish(client: AsyncClient, ids: dict):
+    response = await client.get(
+        app.url_path_for('get_dish', id=ids['menu_id'], sub_id=ids['submenu_id'], dish_id=ids['dish_id'])
+    )
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         'id': f"{ids['dish_id']}",
         'title': 'My dish 1',
@@ -45,40 +60,42 @@ def test_peculiar_dish(ids):
     }
 
 
-def test_update_dish(ids):
+async def test_update_dish(client: AsyncClient, ids):
     payload = {
-        'title': 'My new dish 1',
-        'description': 'Description for fish dish 1',
-        'price': 823
+        'title': 'My updated new dish 1',
+        'description': 'Description for updated dish 1',
+        'price': 823,
+        'submenu_id': str(ids['submenu_id'])
     }
-    response = client.patch(
-        f"api/v1/menus/{ids['menu_id']}/submenus/{ids['submenu_id']}/dishes/{ids['dish_id']}", json=payload)
-    assert response.status_code == 200
+    response = await client.patch(
+        app.url_path_for('update_dish', id=ids['menu_id'], sub_id=ids['submenu_id'], dish_id=ids['dish_id']),
+        json=payload
+    )
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()['id'] == ids['dish_id']
     assert response.json()['title'] == payload['title']
     assert response.json()['description'] == payload['description']
     assert response.json()['price'] == '{:.2f}'.format(payload['price'])
+    assert response.json()['submenu_id'] == payload['submenu_id']
 
 
-def test_peculiar_change_dish(ids):
-    response = client.get(f"api/v1/menus/{ids['menu_id']}/submenus/{ids['submenu_id']}/dishes/{ids['dish_id']}")
-    assert response.status_code == 200
+async def test_peculiar_change_dish(client: AsyncClient, ids):
+    response = await client.get(
+        app.url_path_for('get_dish', id=ids['menu_id'], sub_id=ids['submenu_id'], dish_id=ids['dish_id'])
+    )
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         'id': f"{ids['dish_id']}",
-        'title': 'My new dish 1',
-        'description': 'Description for fish dish 1',
+        'title': 'My updated new dish 1',
+        'description': 'Description for updated dish 1',
         'price': '823.00',
         'submenu_id': f"{ids['submenu_id']}"
     }
 
 
-def test_delete_dish(ids):
-    response = client.delete(f"api/v1/menus/{ids['menu_id']}/submenus/{ids['submenu_id']}/dishes/{ids['dish_id']}")
-    assert response.status_code == 200
+async def test_delete_dish(client: AsyncClient, ids):
+    response = await client.delete(
+        app.url_path_for('get_dish', id=ids['menu_id'], sub_id=ids['submenu_id'], dish_id=ids['dish_id'])
+    )
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {'msg': 'Successfully deleted data'}
-
-
-def test_no_found_dish(ids):
-    response = client.get(f"api/v1/menus/{ids['menu_id']}/submenus/{ids['submenu_id']}/dishes/{ids['dish_id']}")
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'dish not found'}

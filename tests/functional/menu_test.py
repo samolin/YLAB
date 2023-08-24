@@ -1,27 +1,34 @@
-from tests.conftest import client
+from fastapi import status
+from httpx import AsyncClient
+
+from app.main import app
 
 
-def test_initial_menu():
-    response = client.get('api/v1/menus')
-    assert response.status_code == 200
-    assert response.json() == []
+async def test_menu_not_found(client: AsyncClient):
+    response = await client.get(
+        app.url_path_for('get_menus')
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {'detail': 'menu not found'}
 
 
-def test_menu_create(ids):
+async def test_menu_create(client: AsyncClient, ids: dict):
     payload = {
         'title': 'My menu 1',
         'description': 'My menu description 1'
     }
-    response = client.post('/api/v1/menus', json=payload)
-    assert response.status_code == 201
+    response = await client.post(
+        app.url_path_for('create_menu'), json=payload
+    )
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json()['title'] == payload['title']
     assert response.json()['description'] == payload['description']
     ids['menu_id'] = response.json()['id']
 
 
-def test_menu(ids):
-    response = client.get('/api/v1/menus')
-    assert response.status_code == 200
+async def test_get_all_menus(client: AsyncClient, ids: dict):
+    response = await client.get(app.url_path_for('get_menus'))
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == [{
         'id': f"{ids['menu_id']}",
         'title': 'My menu 1',
@@ -31,9 +38,11 @@ def test_menu(ids):
     }]
 
 
-def test_peculiar_menu(ids):
-    response = client.get(f"/api/v1/menus/{ids['menu_id']}")
-    assert response.status_code == 200
+async def test_get_one_menu(client: AsyncClient, ids: dict):
+    response = await client.get(
+        app.url_path_for('get_menu', id=ids['menu_id'])
+    )
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         'id': f"{ids['menu_id']}",
         'title': 'My menu 1',
@@ -43,21 +52,27 @@ def test_peculiar_menu(ids):
     }
 
 
-def test_update_menu(ids):
+async def test_update_menu(client: AsyncClient, ids: dict):
     payload = {
         'title': 'My updated menu 1',
         'description': 'My updated menu description 1'
     }
-    response = client.patch(f"/api/v1/menus/{ids['menu_id']}", json=payload)
-    assert response.status_code == 200
+    response = await client.patch(
+        app.url_path_for('update_menu', id=ids['menu_id']),
+        json=payload
+    )
+    # response = await client.patch(f"/api/v1/menus/{ids['menu_id']}", json=payload)
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()['id'] == ids['menu_id']
     assert response.json()['title'] == payload['title']
     assert response.json()['description'] == payload['description']
 
 
-def test_peculiar_change_menu(ids):
-    response = client.get(f"/api/v1/menus/{ids['menu_id']}")
-    assert response.status_code == 200
+async def test_changed_one_menu(client: AsyncClient, ids: dict):
+    response = await client.get(
+        app.url_path_for('get_menu', id=ids['menu_id'])
+    )
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         'id': f"{ids['menu_id']}",
         'title': 'My updated menu 1',
@@ -67,19 +82,9 @@ def test_peculiar_change_menu(ids):
     }
 
 
-def test_delete_menu(ids):
-    response = client.delete(f"/api/v1/menus/{ids['menu_id']}")
-    assert response.status_code == 200
+async def test_delete_menu(client: AsyncClient, ids: dict):
+    response = await client.delete(
+        app.url_path_for('del_menu', id=ids['menu_id'])
+    )
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {'message': 'The menu has been deleted'}
-
-
-def test_cleaned_menu():
-    response = client.get('api/v1/menus')
-    assert response.status_code == 200
-    assert response.json() == []
-
-
-def test_no_found_menu(ids):
-    response = client.get(f"/api/v1/menus/{ids['menu_id']}")
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'menu not found'}

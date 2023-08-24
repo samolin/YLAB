@@ -1,6 +1,6 @@
 .PHONY: up
 up:
-	@docker compose --profile app up --build -d
+	@docker compose --profile app up --build
 
 
 .PHONY: tests
@@ -17,6 +17,6 @@ tests-down:
 	@docker compose --profile tests down
 
 
-.PHONY: start
-start:
-	@poetry run uvicorn app.main:app --reload
+# .PHONY: up
+# up:
+# 	@docker compose --profile app start

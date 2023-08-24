@@ -1,73 +1,47 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Request
 from fastapi_cache.decorator import cache
-from sqlalchemy.orm import Session
 
-from app.db.CRUD.submenu import (
-    create_new_submenu,
-    delete_submenu,
-    get_submenu_by_id,
-    list_submenus,
-    update_submenu_by_id,
-)
-from app.db.database import get_db
-from app.schemas.submenu_schemas import SubmenuCreate, SubmenuSchema
+from app.repositories.submenu_repository import SubmenuRepository
+from app.schemas.submenu_schemas import SubmenuCreate, SubmenuSchema, SubmenuUpdate
 from app.utils.cache_utils import cache_deleter, id_key_builder
-from app.utils.counter import submenu_counter
 
 router = APIRouter()
 
 
-@router.post('/submenus', status_code=201, response_model=SubmenuSchema)
-def create_submenus(submenu: SubmenuCreate, id: UUID, db: Session = Depends(get_db)):
-    menu = create_new_submenu(id=id, db=db, submenu=submenu)
-    cache_deleter()
-    return menu
+@router.post('/submenus', status_code=201, response_model=SubmenuUpdate)
+async def create_submenu(submenu: SubmenuCreate, id: UUID, request: Request):
+    submenu.__setattr__('menu_id', id)
+    submenu = await SubmenuRepository().add_new(submenu.model_dump())
+    await cache_deleter(path=request.url.path)
+    return submenu
 
 
 @router.get('/submenus', status_code=200, response_model=list[SubmenuSchema])
 @cache(key_builder=id_key_builder, namespace='submenu')
-def get_submenus(id: UUID, db: Session = Depends(get_db)):
-    submenus = list_submenus(id=id, db=db)
-    for submenu in submenus:
-        submenu.dishes_count = submenu_counter(sub_id=submenu.id, db=db)
+async def get_submenus(id: UUID):
+    submenus = await SubmenuRepository().get_all(menu_id=id)
     return submenus
 
 
 @router.get('/submenus/{sub_id}', status_code=200, response_model=SubmenuSchema)
 @cache(key_builder=id_key_builder, namespace='submenu')
-def get_submenu(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
-    submenu = get_submenu_by_id(id=id, sub_id=sub_id, db=db)
-    if submenu:
-        submenu.dishes_count = submenu_counter(sub_id=sub_id, db=db)
-    if not submenu:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='submenu not found',
-        )
+async def get_submenu(id: UUID, sub_id: UUID):
+    submenu = await SubmenuRepository().get_one(submenu_id=sub_id)
     return submenu
 
 
-@router.patch('/submenus/{sub_id}', status_code=200, response_model=SubmenuSchema)
-def update_submenu(id: UUID, sub_id: UUID, submenu: SubmenuCreate, db: Session = Depends(get_db)):
-    message = update_submenu_by_id(id=id, sub_id=sub_id, submenu=submenu, db=db)
-    cache_deleter()
-    if not message:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='submenu not found',
-        )
-    return message
+@router.patch('/submenus/{sub_id}', status_code=200, response_model=SubmenuUpdate)
+async def update_submenu(id: UUID, sub_id: UUID, submenu: SubmenuCreate, request: Request):
+    submenu.__setattr__('menu_id', id)
+    submenu = await SubmenuRepository().patch_one(submenu.model_dump(), submenu_id=sub_id)
+    await cache_deleter(path=request.url.path)
+    return submenu
 
 
 @router.delete('/submenus/{sub_id}', status_code=200)
-def del_submenu(id: UUID, sub_id: UUID, db: Session = Depends(get_db)):
-    submenu = delete_submenu(db=db, id=id, sub_id=sub_id)
-    cache_deleter()
-    if not submenu:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='submenu not found',
-        )
+async def del_submenu(id: UUID, sub_id: UUID, request: Request):
+    await SubmenuRepository().del_one(submenu_id=sub_id)
+    await cache_deleter(path=request.url.path)
     return {'msg': 'Successfully deleted data'}
